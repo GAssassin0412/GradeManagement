@@ -3,7 +3,7 @@
 # **C语言学生成绩管理系统 - 技术学习文档**
 
 **版本:** 1.12
-**作者:** 刘纪宏
+**作者:** 小火龙Erick
 
 **前言**
 
@@ -125,17 +125,21 @@
 ## 4. 编译与运行指南 (Build & Run)
 
 1. **环境要求**: 任何支持标准C的编译器，如GCC (MinGW on Windows), Clang, 或MSVC。
+
 2. **保存文件**: 将源代码保存为 `.c` 文件，例如 `student_system.c`。
+
 3. **编译命令 (使用GCC)**:
    
    ```bash
    gcc student_system.c -o student_system.exe
    ```
+
 4. **运行程序**:
    
    ```bash
    .\student_system.exe
    ```
+
 5. **首次运行**: 首次运行时，由于 `grades.txt` 和 `TeacherList.txt` 不存在，系统将使用默认教师账号 (`admin`/`password`)，且学生列表为空。成功保存数据后，文件会被自动创建。
 
 ## 5. 项目扩展方向 (Future Work)
