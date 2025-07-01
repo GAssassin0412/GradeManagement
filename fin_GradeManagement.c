@@ -89,6 +89,10 @@ void login() {
     char username[20];
     char password[20];
     int loggedIn = 0;
+    int isTeacher = 0;
+    long long studentId;
+    int studentIndex = -1;
+    int i;
 
     while (!loggedIn) {
         printf("\n--- 系统登录 ---\n");
@@ -101,9 +105,9 @@ void login() {
         clearInputBuffer();
 
         // 检查是否为教师
-        int isTeacher = 0;
+        isTeacher = 0;
         if (teacherCount > 0) { // 优先从文件验证
-            for (int i = 0; i < teacherCount; i++) {
+            for (i = 0; i < teacherCount; i++) {
                 if (my_strcmp(teachers[i].username, username) == 0 && my_strcmp(teachers[i].password, password) == 0) {
                     isTeacher = 1;
                     break;
@@ -123,8 +127,7 @@ void login() {
         }
 
         // 检查是否为学生 (学号和密码相同)
-        long long studentId;
-        int studentIndex = -1;
+        studentIndex = -1;
         if (my_strcmp(username, password) == 0) {
             sscanf(username, "%lld", &studentId);
             studentIndex = findStudentById(studentId);
@@ -186,6 +189,9 @@ void menu() {
 // 学生个人菜单
 void studentMenu(int studentIndex) {
     int choice;
+    int i;
+    float average_score;
+
     do {
         printf("\n----- 学生个人中心 -----\n");
         printf("欢迎你, %s 同学！\n", students[studentIndex].name);
@@ -206,10 +212,10 @@ void studentMenu(int studentIndex) {
                 printf("%-10s: %lld\n", "学号", students[studentIndex].id);
                 printf("%-10s: %s\n", "姓名", students[studentIndex].name);
                 printf("各科成绩详情:\n");
-                for (int i = 0; i < MAX_SUBJECTS; i++) {
+                for (i = 0; i < MAX_SUBJECTS; i++) {
                     printf("  - %-8s: %.2f\n", SUBJECT_NAMES[i], students[studentIndex].scores[i]);
                 }
-                float average_score = calculateAverage(&students[studentIndex]);
+                average_score = calculateAverage(&students[studentIndex]);
                 printf("------------------------\n");
                 printf("%-10s: %.2f\n", "平均分", average_score);
                 break;
@@ -264,12 +270,15 @@ void manageStudents() {
 
 // 添加新学生
 void addStudent() {
+    int i;
+    int j;
+
     printf("\n--- 添加学生 ---\n");
     if (studentCount >= MAX_STUDENTS) {
         printf("学生数量已达到上限。\n");
         return;
     }
-    int i = studentCount;
+    i = studentCount;
     printf("请输入学号: ");
     while (scanf("%lld", &students[i].id) != 1) {
         printf("输入无效，请输入一个整数作为学号: ");
@@ -286,7 +295,7 @@ void addStudent() {
     scanf("%19s", students[i].name);
     clearInputBuffer();
     printf("请依次输入各科成绩 (0-100):\n");
-    for (int j = 0; j < MAX_SUBJECTS; j++) {
+    for (j = 0; j < MAX_SUBJECTS; j++) {
         printf("请输入 %s 成绩: ", SUBJECT_NAMES[j]);
         while (scanf("%f", &students[i].scores[j]) != 1 ||
                students[i].scores[j] < 0 || students[i].scores[j] > 100) {
@@ -301,7 +310,8 @@ void addStudent() {
 
 // 根据学号查找学生，返回索引；未找到返回-1
 int findStudentById(long long id) {
-    for (int i = 0; i < studentCount; i++) {
+    int i;
+    for (i = 0; i < studentCount; i++) {
         if (students[i].id == id) {
             return i;
         }
@@ -311,25 +321,29 @@ int findStudentById(long long id) {
 
 // 删除指定学号的学生
 void deleteStudent() {
+    long long id_to_delete;
+    int index;
+    int i;
+
     printf("\n--- 删除学生 ---\n");
     if (studentCount == 0) {
         printf("当前没有学生信息可删除。\n");
         return;
     }
-    long long id_to_delete;
+
     printf("请输入要删除的学生的学号: ");
     while (scanf("%lld", &id_to_delete) != 1) {
         printf("输入无效，请输入一个整数作为学号: ");
         clearInputBuffer();
     }
     clearInputBuffer();
-    int index = findStudentById(id_to_delete);
+    index = findStudentById(id_to_delete);
     if (index == -1) {
         printf("未找到学号为 %lld 的学生。\n", id_to_delete);
         return;
     }
     // 将后续元素前移，覆盖要删除的元素
-    for (int i = index; i < studentCount - 1; i++) {
+    for (i = index; i < studentCount - 1; i++) {
         students[i] = students[i + 1];
     }
     studentCount--;
@@ -338,19 +352,24 @@ void deleteStudent() {
 
 // 修改指定学号的学生信息
 void modifyStudent() {
+    long long id_to_modify;
+    int index;
+    int i, j;
+    long long new_id;
+
     printf("\n--- 修改学生信息 ---\n");
     if (studentCount == 0) {
         printf("当前没有学生信息可修改。\n");
         return;
     }
-    long long id_to_modify;
+
     printf("请输入要修改的学生的学号: ");
     while (scanf("%lld", &id_to_modify) != 1) {
         printf("输入无效，请输入一个整数作为学号: ");
         clearInputBuffer();
     }
     clearInputBuffer();
-    int index = findStudentById(id_to_modify);
+    index = findStudentById(id_to_modify);
     if (index == -1) {
         printf("未找到学号为 %lld 的学生。\n", id_to_modify);
         return;
@@ -358,12 +377,12 @@ void modifyStudent() {
     printf("找到了学生！当前信息如下：\n");
     printf("%-10s: %lld\n", "学号", students[index].id);
     printf("%-10s: %s\n", "姓名", students[index].name);
-    for (int i = 0; i < MAX_SUBJECTS; i++) {
+    for (i = 0; i < MAX_SUBJECTS; i++) {
         printf("  - %-8s: %.2f\n", SUBJECT_NAMES[i], students[index].scores[i]);
     }
     printf("\n请开始输入新信息 (密码将自动更新为新学号)：\n");
     printf("请输入新的学号: ");
-    long long new_id;
+
     while (scanf("%lld", &new_id) != 1) {
         printf("输入无效，请输入一个整数作为学号: ");
         clearInputBuffer();
@@ -380,7 +399,7 @@ void modifyStudent() {
     scanf("%19s", students[index].name);
     clearInputBuffer();
     printf("请依次输入新的各科成绩 (0-100):\n");
-    for (int j = 0; j < MAX_SUBJECTS; j++) {
+    for (j = 0; j < MAX_SUBJECTS; j++) {
         printf("请输入新的 %s 成绩: ", SUBJECT_NAMES[j]);
         while (scanf("%f", &students[index].scores[j]) != 1 ||
                students[index].scores[j] < 0 || students[index].scores[j] > 100) {
@@ -394,19 +413,24 @@ void modifyStudent() {
 
 // 查询指定学号的学生信息
 void searchStudent() {
+    long long id_to_search;
+    int index;
+    int i;
+    float average_score;
+
     printf("\n--- 查询学生信息 ---\n");
     if (studentCount == 0) {
         printf("当前没有学生信息可查询。\n");
         return;
     }
-    long long id_to_search;
+
     printf("请输入要查询的学生的学号: ");
     while (scanf("%lld", &id_to_search) != 1) {
         printf("输入无效，请输入一个整数作为学号: ");
         clearInputBuffer();
     }
     clearInputBuffer();
-    int index = findStudentById(id_to_search);
+    index = findStudentById(id_to_search);
     if (index == -1) {
         printf("未找到学号为 %lld 的学生。\n", id_to_search);
     } else {
@@ -414,10 +438,10 @@ void searchStudent() {
         printf("%-10s: %lld\n", "学号", students[index].id);
         printf("%-10s: %s\n", "姓名", students[index].name);
         printf("各科成绩:\n");
-        for (int i = 0; i < MAX_SUBJECTS; i++) {
+        for (i = 0; i < MAX_SUBJECTS; i++) {
              printf("  - %-8s: %.2f\n", SUBJECT_NAMES[i], students[index].scores[i]);
         }
-        float average_score = calculateAverage(&students[index]);
+        average_score = calculateAverage(&students[index]);
         printf("------------------------\n");
         printf("%-10s: %.2f\n", "平均分", average_score);
     }
@@ -463,20 +487,22 @@ void rankMenu() {
 
 // 按平均分对学生进行排名并显示
 void rankByAverage() {
+    struct Student tempStudents[MAX_STUDENTS];
+    int i, j;
+
     if (studentCount == 0) {
         printf("当前没有学生信息可排名。\n");
         return;
     }
 
     // 创建临时数组，避免修改原始数据顺序
-    struct Student tempStudents[MAX_STUDENTS];
-    for (int i = 0; i < studentCount; i++) {
+    for (i = 0; i < studentCount; i++) {
         tempStudents[i] = students[i];
     }
 
     // 冒泡排序 (按平均分降序)
-    for (int i = 0; i < studentCount - 1; i++) {
-        for (int j = 0; j < studentCount - i - 1; j++) {
+    for (i = 0; i < studentCount - 1; i++) {
+        for (j = 0; j < studentCount - i - 1; j++) {
             if (calculateAverage(&tempStudents[j]) < calculateAverage(&tempStudents[j+1])) {
                 swapStudents(&tempStudents[j], &tempStudents[j+1]);
             }
@@ -489,15 +515,20 @@ void rankByAverage() {
 
 // 按指定单科成绩对学生进行排名并显示
 void rankBySubject() {
+    int subject_choice;
+    int subject_index;
+    struct Student tempStudents[MAX_STUDENTS];
+    char title[100];
+    int i, j;
+
     if (studentCount == 0) {
         printf("当前没有学生信息可排名。\n");
         return;
     }
 
     // 用户选择排名的科目
-    int subject_choice;
     printf("\n请选择要排名的科目:\n");
-    for (int i = 0; i < MAX_SUBJECTS; i++) {
+    for (i = 0; i < MAX_SUBJECTS; i++) {
         printf("%d. %s\n", i + 1, SUBJECT_NAMES[i]);
     }
     printf("请输入科目序号: ");
@@ -506,17 +537,16 @@ void rankBySubject() {
         clearInputBuffer();
     }
     clearInputBuffer();
-    int subject_index = subject_choice - 1;
+    subject_index = subject_choice - 1;
 
     // 创建临时数组
-    struct Student tempStudents[MAX_STUDENTS];
-    for (int i = 0; i < studentCount; i++) {
+    for (i = 0; i < studentCount; i++) {
         tempStudents[i] = students[i];
     }
 
     // 冒泡排序 (按指定科目成绩降序)
-    for (int i = 0; i < studentCount - 1; i++) {
-        for (int j = 0; j < studentCount - i - 1; j++) {
+    for (i = 0; i < studentCount - 1; i++) {
+        for (j = 0; j < studentCount - i - 1; j++) {
             if (tempStudents[j].scores[subject_index] < tempStudents[j+1].scores[subject_index]) {
                 swapStudents(&tempStudents[j], &tempStudents[j+1]);
             }
@@ -524,13 +554,15 @@ void rankBySubject() {
     }
 
     // 显示排序结果
-    char title[100];
     sprintf(title, "--- 学生成绩列表 (按%s排名) ---", SUBJECT_NAMES[subject_index]);
     displayStudentList(tempStudents, studentCount, title);
 }
 
 // 通用函数：显示学生列表 (带表头和排名)
 void displayStudentList(const struct Student list[], int count, const char* title) {
+    int i, j;
+    float average_score;
+
     printf("\n%s\n", title);
     if (count == 0) {
         printf("当前没有学生信息可显示。\n");
@@ -539,21 +571,21 @@ void displayStudentList(const struct Student list[], int count, const char* titl
 
     // 打印表头
     printf("%-4s%-16s%-12s", "排名", "学号", "姓名");
-    for (int i = 0; i < MAX_SUBJECTS; i++) {
+    for (i = 0; i < MAX_SUBJECTS; i++) {
         printf("%-10s", SUBJECT_NAMES[i]);
     }
     printf("%-10s\n", "平均分");
     printf("----------------------------------------------------------------------------\n");
 
     // 打印学生信息
-    for (int i = 0; i < count; i++) {
+    for (i = 0; i < count; i++) {
         printf("%-4d%-16lld%-12s", i + 1, list[i].id, list[i].name);
 
-        for (int j = 0; j < MAX_SUBJECTS; j++) {
+        for (j = 0; j < MAX_SUBJECTS; j++) {
             printf("%-10.2f", list[i].scores[j]);
         }
 
-        float average_score = calculateAverage(&list[i]);
+        average_score = calculateAverage(&list[i]);
         printf("%-10.2f\n", average_score);
     }
 
@@ -566,9 +598,10 @@ void displayStudentList(const struct Student list[], int count, const char* titl
 
 // 计算单个学生的平均分
 float calculateAverage(const struct Student* s) {
-    if (MAX_SUBJECTS == 0) return 0.0f;
     float total = 0;
-    for (int i = 0; i < MAX_SUBJECTS; i++) {
+    int i;
+    if (MAX_SUBJECTS == 0) return 0.0f;
+    for (i = 0; i < MAX_SUBJECTS; i++) {
         total += s->scores[i];
     }
     return total / MAX_SUBJECTS;
@@ -586,15 +619,18 @@ void swapStudents(struct Student* a, struct Student* b) {
 
 // 保存学生数据到文件
 void saveData() {
-    FILE *fp = fopen(FILENAME, "w");
+    FILE *fp;
+    int i, j;
+
+    fp = fopen(FILENAME, "w");
     if (fp == NULL) {
         printf("错误：无法打开文件 %s 进行写入。\n", FILENAME);
         return;
     }
     fprintf(fp, "%d\n", studentCount); // 首先写入学生总数
-    for (int i = 0; i < studentCount; i++) {
+    for (i = 0; i < studentCount; i++) {
         fprintf(fp, "%lld %s", students[i].id, students[i].name);
-        for (int j = 0; j < MAX_SUBJECTS; j++) {
+        for (j = 0; j < MAX_SUBJECTS; j++) {
             fprintf(fp, " %.2f", students[i].scores[j]);
         }
         fprintf(fp, "\n");
@@ -605,12 +641,17 @@ void saveData() {
 
 // 从文件加载学生数据
 void loadData() {
-    FILE *fp = fopen(FILENAME, "r");
+    FILE *fp;
+    int fileStudentCount = 0;
+    int i, j;
+    int success;
+
+    fp = fopen(FILENAME, "r");
     if (fp == NULL) { // 文件不存在是正常情况，不报错
         studentCount = 0;
         return;
     }
-    int fileStudentCount = 0;
+
     if (fscanf(fp, "%d\n", &fileStudentCount) != 1) { // 读取学生总数
         studentCount = 0;
         fclose(fp);
@@ -620,11 +661,11 @@ void loadData() {
         fileStudentCount = MAX_STUDENTS;
     }
     studentCount = 0;
-    for (int i = 0; i < fileStudentCount; i++) {
+    for (i = 0; i < fileStudentCount; i++) {
         // 读取一行学生数据
         if (fscanf(fp, "%lld %19s", &students[i].id, students[i].name) == 2) {
-            int success = 1;
-            for (int j = 0; j < MAX_SUBJECTS; j++) {
+            success = 1;
+            for (j = 0; j < MAX_SUBJECTS; j++) {
                 if (fscanf(fp, "%f", &students[i].scores[j]) != 1) {
                     success = 0; // 如果成绩读取失败，标记此行数据无效
                     break;
